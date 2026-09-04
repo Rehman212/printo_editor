@@ -1,0 +1,21 @@
+/** Expected NestJS surface. The frontend currently uses local mock services. */
+export const endpoints = {
+  products: "GET /products",
+  product: "GET /products/:id",
+  price: "POST /products/:id/price",
+  templates: "GET /templates",
+  template: "GET /templates/:id",
+  uploadPresign: "POST /uploads/presign",
+  uploadComplete: "POST /uploads/complete",
+  uploadDelete: "DELETE /uploads/:id",
+  designsCreate: "POST /designs",
+  designsGet: "GET /designs/:id",
+  designsPatch: "PATCH /designs/:id",
+  designsDelete: "DELETE /designs/:id",
+  designsDuplicate: "POST /designs/:id/duplicate",
+  designsShare: "POST /designs/:id/share",
+  designsPreflight: "POST /designs/:id/preflight",
+  designsPreview: "POST /designs/:id/preview",
+  myDesigns: "GET /users/me/designs",
+  cartAdd: "POST /cart/items",
+} as const;
