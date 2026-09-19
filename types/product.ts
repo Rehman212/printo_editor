@@ -63,4 +63,22 @@ export interface ProductConfiguration {
   price: number;
   bleed: number;
   safeArea: number;
+  printoeHandoff?: PrintoeHandoff | null;
+}
+
+export interface PrintoeHandoff {
+  slug: string;
+  apiBase: string;
+  shopBase?: string;
+  accessToken?: string;
+  quantityKey: string;
+  selections: Record<string, string>;
+  details: { label: string; value: string }[];
+  quantities: {
+    value: string;
+    label: string;
+    qty: number;
+    total?: number;
+    unitPrice?: number;
+  }[];
 }

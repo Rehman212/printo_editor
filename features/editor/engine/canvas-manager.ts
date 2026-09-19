@@ -54,6 +54,9 @@ export class EditorEngine {
     this.pageHeight = height;
     this.bindEvents();
     this.canvas.calcOffset();
+    if (this.canvas.wrapperEl) {
+      this.canvas.wrapperEl.style.background = "transparent";
+    }
   }
 
   bindViewport(el: HTMLElement) {
@@ -187,9 +190,9 @@ export class EditorEngine {
     const viewW = parent?.clientWidth || this.canvas.getWidth() || 800;
     const viewH = parent?.clientHeight || this.canvas.getHeight() || 600;
     if (viewW < 80 || viewH < 80) return;
-    const pad = 48;
+    const pad = 88;
     const scale = Math.min((viewW - pad) / this.pageWidth, (viewH - pad) / this.pageHeight);
-    const zoom = Math.min(Math.max(scale, 0.35), 3);
+    const zoom = Math.min(Math.max(scale, 0.04), 3);
     const panX = (viewW - this.pageWidth * zoom) / 2;
     const panY = (viewH - this.pageHeight * zoom) / 2;
     this.canvas.setViewportTransform([zoom, 0, 0, zoom, panX, panY]);
@@ -990,6 +993,9 @@ export class EditorEngine {
       width: this.pageWidth,
       height: this.pageHeight,
       fill: "#ffffff",
+      stroke: "#111827",
+      strokeWidth: 4,
+      strokeUniform: true,
       selectable: false,
       evented: false,
       role: "page",
@@ -1011,19 +1017,14 @@ export class EditorEngine {
     this.canvas.getObjects().forEach((obj) => {
       if ((obj as { role?: string }).role === "guide") this.canvas.remove(obj);
     });
+    this.addGuide("bounds", 0, 0, this.pageWidth, this.pageHeight, "#111827", []);
     const settings = useEditorStore.getState().document?.settings;
-    if (!settings?.showBleed && !settings?.showSafeArea) {
-      this.sendPageToBack();
-      this.skipHistory = false;
-      return;
-    }
     const bleedPx = inchesToPx(this.bleed);
     const safePx = inchesToPx(this.safe);
-    if (settings?.showBleed) {
-      this.addGuide("bleed", 0, 0, this.pageWidth, this.pageHeight, "#ef4444", []);
+    if (settings?.showBleed && this.bleed > 0) {
       this.addGuide("trim", bleedPx, bleedPx, this.pageWidth - bleedPx * 2, this.pageHeight - bleedPx * 2, "#f59e0b", [8, 4]);
     }
-    if (settings?.showSafeArea) {
+    if (settings?.showSafeArea && this.safe > 0) {
       this.addGuide(
         "safe",
         bleedPx + safePx,
@@ -1056,7 +1057,7 @@ export class EditorEngine {
       height,
       fill: "transparent",
       stroke,
-      strokeWidth: 1,
+      strokeWidth: 3,
       strokeDashArray: dash.length ? dash : undefined,
       selectable: false,
       evented: false,
@@ -1140,9 +1141,6 @@ export async function mountEngine(el: HTMLCanvasElement, doc: DesignDocument) {
     }
   } catch (error) {
     console.warn("Could not restore page JSON", error);
-  }
-  if (engine.contentObjects().length === 0) {
-    engine.applyTemplate("tpl_modern_navy", ["#0f172a", "#38bdf8", "#f8fafc"]);
   }
   useHistoryStore.getState().reset(JSON.stringify(engine.serialize()));
   requestAnimationFrame(() => engine.fitToScreen());

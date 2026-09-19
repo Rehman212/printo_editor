@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiStore, type ToolId } from "@/stores/ui-store";
+import { useEditorStore } from "@/features/editor/stores/editor-store";
 
 const tools: { id: ToolId; label: string; icon: typeof Type }[] = [
   { id: "configure", label: "Config", icon: Settings2 },
@@ -28,9 +29,14 @@ export function LeftToolDock() {
   const active = useUiStore((s) => s.activeTool);
   const setTool = useUiStore((s) => s.setTool);
   const setMobile = useUiStore((s) => s.setMobileSheet);
+  const locked = Boolean(
+    useEditorStore((s) => s.document?.productConfiguration.printoeHandoff),
+  );
   return (
     <nav className="flex h-16 w-full shrink-0 items-center gap-1 overflow-x-auto border-t border-slate-200 bg-[#f3f4f6] px-1 lg:h-full lg:w-[88px] lg:flex-col lg:border-r lg:border-t-0 lg:py-3">
-      {tools.map((tool) => {
+      {tools
+        .filter((tool) => !(locked && tool.id === "configure"))
+        .map((tool) => {
         const Icon = tool.icon;
         const on = active === tool.id;
         return (

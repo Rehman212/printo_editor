@@ -12,6 +12,7 @@ import { useHistoryStore } from "@/features/editor/stores/history-store";
 import { createBlankDocument, designsService } from "@/services/designs.service";
 import { defaultConfiguration } from "@/services/products.service";
 import { products } from "@/services/mock-data";
+import { saveDesignToPrintoeAccount } from "@/lib/printoe-account";
 
 export function EditorHeader() {
   const doc = useEditorStore((s) => s.document);
@@ -40,6 +41,26 @@ export function EditorHeader() {
       useEditorStore.getState().setDocument(saved);
       useEditorStore.getState().setSaveStatus("saved");
       useEditorStore.getState().setDirty(false);
+      const account = await saveDesignToPrintoeAccount(saved);
+      const shop =
+        saved.productConfiguration.printoeHandoff?.shopBase || "https://printoe.com";
+      const accountUrl = `${shop.replace(/\/$/, "")}/dashboard/saved-designs`;
+      if (account.ok) {
+        toast.success("Design saved successfully", {
+          duration: 15000,
+          description: "Go to your account to check Saved Designs.",
+          action: {
+            label: "Go to account",
+            onClick: () => {
+              window.location.href = accountUrl;
+            },
+          },
+        });
+      } else if (account.reason === "auth" && saved.productConfiguration.printoeHandoff) {
+        toast.error("Please log in on Printoe first, then open Design Online again.", {
+          duration: 15000,
+        });
+      }
       return saved;
     } catch {
       useEditorStore.getState().setSaveStatus("error");
@@ -79,7 +100,7 @@ export function EditorHeader() {
               className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
               onClick={() => {
                 setMenu(false);
-                void persist().then(() => toast.success("Design saved"));
+                void persist();
               }}
             >
               Save
@@ -111,7 +132,7 @@ export function EditorHeader() {
         >
           <Eye className="h-4 w-4" /> Preview
         </Button>
-        <Button size="sm" variant="subtle" className="bg-white text-slate-900 hover:bg-slate-100" onClick={() => persist().then(() => toast.success("Design saved"))}>
+        <Button size="sm" variant="subtle" className="bg-white text-slate-900 hover:bg-slate-100" onClick={() => void persist()}>
           <Save className="h-4 w-4" /> Save
         </Button>
       </div>

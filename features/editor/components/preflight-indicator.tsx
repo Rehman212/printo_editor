@@ -7,10 +7,13 @@ import { useEditorStore } from "@/features/editor/stores/editor-store";
 
 export function PreflightIndicator() {
   const issues = useEditorStore((s) => s.preflight);
+  const locked = Boolean(
+    useEditorStore((s) => s.document?.productConfiguration.printoeHandoff),
+  );
   const { engine } = useEngine();
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
-  if (!issues.length || hidden) return null;
+  if (locked || !issues.length || hidden) return null;
   const errors = issues.filter((item) => item.type === "error").length;
 
   return (

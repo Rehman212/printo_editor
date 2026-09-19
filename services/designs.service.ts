@@ -36,6 +36,7 @@ export function createBlankDocument(
   productId: string,
   config: ProductConfiguration,
   name?: string,
+  productName?: string,
 ): DesignDocument {
   const product = products.find((item) => item.id === productId);
   const pages = [emptyPage(config, "front", 0, "Front")];
@@ -43,18 +44,22 @@ export function createBlankDocument(
     pages.push(emptyPage(config, "back", 1, "Back"));
   }
   const now = new Date().toISOString();
+  const priced = {
+    ...config,
+    price: config.price || (product ? quotePrice(product, config) : 0),
+  };
   return {
     schemaVersion: 1,
     projectId: nanoid(),
-    name: name ?? `${product?.name ?? "Design"} — Untitled`,
+    name: name ?? `${productName ?? product?.name ?? "Design"} — Untitled`,
     productId,
-    productName: product?.name ?? "Print product",
-    productConfiguration: { ...config, price: quotePrice(product ?? products[0], config) },
+    productName: productName ?? product?.name ?? "Print product",
+    productConfiguration: priced,
     pages,
     activePageId: pages[0].id,
     settings: {
-      showBleed: true,
-      showSafeArea: true,
+      showBleed: false,
+      showSafeArea: false,
       showGrid: false,
       snapEnabled: true,
     },
