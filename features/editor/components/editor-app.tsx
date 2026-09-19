@@ -11,6 +11,7 @@ import { products } from "@/services/mock-data";
 import { storageGet } from "@/lib/storage";
 import { configurationFromHandoff, parseEditorHandoff } from "@/lib/printoe-handoff";
 import { fetchPrintoeSavedDesign } from "@/lib/printoe-account";
+import { requirePrintoeSession } from "@/lib/printoe-session";
 import type { DesignDocument } from "@/types/design";
 
 export function EditorApp() {
@@ -29,6 +30,8 @@ export function EditorApp() {
       const projectId = search.get("projectId");
       if (token) window.sessionStorage.setItem("printoe_pt", token);
       if (api) window.sessionStorage.setItem("printoe_api", api);
+      const ok = await requirePrintoeSession(token, api);
+      if (!ok || !alive) return;
       let doc: DesignDocument | null = null;
 
       if (printoeDesignId && token) {
